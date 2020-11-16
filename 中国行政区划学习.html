@@ -222,7 +222,7 @@
                     [provinceData[i], provinceData[rand]] = [provinceData[rand], provinceData[i]]
                 }
             }
-            console.log(provinceData.length, provinceData);
+            
             questionProvince = provinceData[questionIndex];
 
             var q_text = questionProvince.question_text.split('/');
@@ -230,20 +230,17 @@
             document.getElementById('q_text').innerText = q_text[Math.floor(Math.random() * q_text.length)];
             questionIndex++;
             if (questionIndex == provinceData.length) {
-                console.log('loop ends', questionIndex);
                 questionIndex = 0;
             }
         };
         
         map.addEventListener('click', function(e){
             
-            console.log(e);
             var point = new BMapGL.Point(e.latlng.lng, e.latlng.lat);
             var gc = new BMapGL.Geocoder();
             gc.getLocation(point, function(rs){
                 var addComp = rs.addressComponents;
                 var answerProvince = addComp.province;
-                console.log(answerProvince);
 
                 if (answerProvince == questionProvince.answer_value) {
                     highlightProvince(questionProvince);
