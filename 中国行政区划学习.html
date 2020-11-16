@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>中国行政区划学习</title>
+    <style type="text/css">
+        html {
+            height: 100%
+        }
+
+        body {
+            height: 100%;
+            margin: 0px;
+            padding: 0px
+        }
+
+        #container {
+            height: 100%
+        }
+
+        #question {
+           position: fixed;
+           top: 10px;
+           left: 0;
+           right: 0;
+           width: 50%;
+           margin-left: auto;
+           margin-right: auto;
+           padding: 0px 7px;
+           min-width: 350px;
+           height: 120px;
+           line-height: 35px;
+           background: #fff;
+           box-shadow: 0 2px 6px 0 rgba(27, 142, 236, 0.5);
+           border-radius: 7px;
+           z-index: 99;
+       }
+       #q_text {
+        font-size: 24px;
+       }
+    </style>
+    <script type="text/javascript"
+        src="https://api.map.baidu.com/api?type=webgl&v=1.0&ak=dV9oPtbG8eFNEq4V5Fv1rWDqqrDeG2Eg"></script>
+</head>
+
+<body>
+    <div id="container"></div>
+    <div id='question'>
+        <div><label><input id="city_toggle_cb" type="checkbox" onclick="toggleCity()"> 显示行政中心</label></div>
+        根据以下名称在地图上点击对应的行政区：
+        <div id='q_text'></div>
+    </div>
+    <script type="text/javascript">
+        const styleJson1 = [{
+            "featureType": "district",
+            "elementType": "labels",
+            "stylers": {
+                "visibility": "on"
+            }
+        }, {
+            "featureType": "road",
+            "elementType": "geometry",
+            "stylers": {
+                "visibility": "off"
+            }
+        }, {
+            "featureType": "continent",
+            "elementType": "labels",
+            "stylers": {
+                "visibility": "on"
+            }
+        }, {
+            "featureType": "country",
+            "elementType": "labels",
+            "stylers": {
+                "visibility": "off"
+            }
+        }, {
+            "featureType": "city",
+            "elementType": "labels.icon",
+            "stylers": {
+                "visibility": "on"
+            }
+        }, {
+            "featureType": "city",
+            "elementType": "labels",
+            "stylers": {
+                "visibility": "on"
+            }
+        }];
+        
+        const styleJson2 = [{
+            "featureType": "district",
+            "elementType": "labels",
+            "stylers": {
+                "visibility": "on"
+            }
+        }, {
+            "featureType": "road",
+            "elementType": "geometry",
+            "stylers": {
+                "visibility": "off"
+            }
+        }, {
+            "featureType": "continent",
+            "elementType": "labels",
+            "stylers": {
+                "visibility": "on"
+            }
+        }, {
+            "featureType": "country",
+            "elementType": "labels",
+            "stylers": {
+                "visibility": "off"
+            }
+        }, {
+            "featureType": "city",
+            "elementType": "labels.icon",
+            "stylers": {
+                "visibility": "off"
+            }
+        }, {
+            "featureType": "city",
+            "elementType": "labels",
+            "stylers": {
+                "visibility": "off"
+            }
+        }];
+        
+        const provinceData = [
+            {question_text: '北京市/京', answer_value: '北京市', color: '#f9f557'},
+            {question_text: '天津市/津', answer_value: '天津市', color: '#58b57f'}, 
+            {question_text: '上海市/沪', answer_value: '上海市', color: '#58b57f'}, 
+            {question_text: '重庆市/渝', answer_value: '重庆市', color: '#cfcad7'},
+            {question_text: '黑龙江省/黑', answer_value: '黑龙江省', color: '#f2bacf'}, 
+            {question_text: '吉林省/吉', answer_value: '吉林省', color: '#58b57f'},
+            {question_text: '辽宁省/辽', answer_value: '辽宁省', color: '#f9d357'},
+            {question_text: '内蒙古自治区/内蒙古', answer_value: '内蒙古自治区', color: '#f9f557'},
+            {question_text: '新疆维吾尔自治区/新', answer_value: '新疆维吾尔自治区', color: '#f9d357'},
+            {question_text: '西藏自治区/藏', answer_value: '西藏自治区', color: '#cfcad7'}, 
+            {question_text: '青海省/青', answer_value: '青海省', color: '#f2bacf'},
+            {question_text: '甘肃省/甘/陇', answer_value: '甘肃省', color: '#58b57f'},
+            {question_text: '宁夏回族自治区/宁', answer_value: '宁夏回族自治区', color: '#f9d357'},
+            {question_text: '四川省/川/蜀', answer_value: '四川省', color: '#f9d357'}, 
+            {question_text: '云南省/云/滇', answer_value: '云南省', color: '#f9f557'},
+            {question_text: '贵州省/贵/黔', answer_value: '贵州省', color: '#58b57f'},
+            {question_text: '河北省/冀', answer_value: '河北省', color: '#f2bacf'},
+            {question_text: '河南省/豫', answer_value: '河南省', color: '#cfcad7'},
+            {question_text: '山东省/鲁', answer_value: '山东省', color: '#f9f557'},
+            {question_text: '山西省/晋', answer_value: '山西省', color: '#58b57f'},
+            {question_text: '陕西省/陕/秦', answer_value: '陕西省', color: '#f2bacf'},
+            {question_text: '湖北省/鄂', answer_value: '湖北省', color: '#f9f557'},
+            {question_text: '湖南省/湘', answer_value: '湖南省', color: '#f2bacf'}, 
+            {question_text: '安徽省/皖', answer_value: '安徽省', color: '#f9d357'}, 
+            {question_text: '江苏省/苏', answer_value: '江苏省', color: '#cfcad7'}, 
+            {question_text: '江西省/赣', answer_value: '江西省', color: '#58b57f'}, 
+            {question_text: '浙江省/浙', answer_value: '浙江省', color: '#f9f557'}, 
+            {question_text: '福建省/闽', answer_value: '福建省', color: '#f9d357'}, 
+            {question_text: '广东省/粤', answer_value: '广东省', color: '#f9f557'}, 
+            {question_text: '广西壮族自治区/桂', answer_value: '广西壮族自治区', color: '#f9d357'}, 
+            {question_text: '海南省/琼', answer_value: '海南省', color: '#f2bacf'},
+            // {question_text: '香港特别行政区/港', answer_value: '香港特别行政区', color: '#f9f557'},
+            // {question_text: '澳门特别行政区/澳', answer_value: '澳门特别行政区', color: '#f9f557'},
+            {question_text: '台湾省/台', answer_value: '台湾省', color: '#f2bacf'}
+        ];
+        
+        var map = new BMapGL.Map('container', {
+            style: {
+                styleJson: styleJson2
+            },
+            minZoom: 6,
+            maxZoom: 6
+        });
+        map.centerAndZoom('兰州', 6);
+        map.setDefaultCursor('pointer');
+        // map.setTilt(50);
+
+        var toggleCity = function() {
+            var city_toggle_cb = document.getElementById('city_toggle_cb');
+            if (city_toggle_cb.checked != true) {
+                map.setMapStyleV2({styleJson: styleJson2});
+            } else {
+                map.setMapStyleV2({styleJson: styleJson1});
+            }
+        }
+
+        var fillProvinceColor = function(province) {
+            var bd = new BMapGL.Boundary();
+            bd.get(province.answer_value, function (rs) {
+                var count = rs.boundaries.length;
+                for (var i = 0; i < count; i++) {
+                    const ply = new BMapGL.Polygon(rs.boundaries[i], {strokeWeight: 1, strokeColor: '#aaaaaa', fillColor: province.color});
+                    map.addOverlay(ply);
+                }
+            });
+        };
+
+        var highlightProvince = function (province) {
+            var bd = new BMapGL.Boundary();
+            bd.get(province.answer_value, function (rs) {
+                var count = rs.boundaries.length;
+                
+                for (var i = 0; i < count; i++) {
+                    const ply = new BMapGL.Polygon(rs.boundaries[i], {strokeWeight: 1, strokeColor: '#000000', fillColor: province.color});
+                    map.addOverlay(ply);
+                    setTimeout(function() {
+                        map.removeOverlay(ply);
+                    }, 800);
+                }
+            });
+        };
+
+        var questionIndex = 0;
+
+        var nextQuestionProvince = function() {
+            if (questionIndex == 0) {
+                // randomize
+                for (var i = provinceData.length - 1; i > 0; i--) {
+                    var rand = Math.floor(Math.random() * (i + 1));
+                    [provinceData[i], provinceData[rand]] = [provinceData[rand], provinceData[i]]
+                }
+            }
+            console.log(provinceData.length, provinceData);
+            questionProvince = provinceData[questionIndex];
+
+            var q_text = questionProvince.question_text.split('/');
+
+            document.getElementById('q_text').innerText = q_text[Math.floor(Math.random() * q_text.length)];
+            questionIndex++;
+            if (questionIndex == provinceData.length) {
+                console.log('loop ends', questionIndex);
+                questionIndex = 0;
+            }
+        };
+        
+        map.addEventListener('click', function(e){
+            
+            console.log(e);
+            var point = new BMapGL.Point(e.latlng.lng, e.latlng.lat);
+            var gc = new BMapGL.Geocoder();
+            gc.getLocation(point, function(rs){
+                var addComp = rs.addressComponents;
+                var answerProvince = addComp.province;
+                console.log(answerProvince);
+
+                if (answerProvince == questionProvince.answer_value) {
+                    highlightProvince(questionProvince);
+                    nextQuestionProvince();
+                }
+            })
+        });
+
+        setTimeout(function() {
+            provinceData.forEach(function(province) {
+                fillProvinceColor(province);
+            })
+        }, 20);
+        nextQuestionProvince();
+    </script>
+</body>
+
+</html>
